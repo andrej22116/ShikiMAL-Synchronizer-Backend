@@ -13,7 +13,7 @@ class AnimeListModel {
             $client = new Client();
 
             $list = [];
-            $nextPageUrl = Endpoints::API_V2_URL . '/users/@me/animelist?nsfw=1&limit=1000&fields=my_list_status,num_episodes';
+            $nextPageUrl = Endpoints::API_V2_URL . '/users/@me/animelist?nsfw=1&limit=1000&fields=my_list_status,num_episodes,alternative_titles';
 
             do {
                 $response = $client->get($nextPageUrl, [

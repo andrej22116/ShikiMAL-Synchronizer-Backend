@@ -16,8 +16,8 @@ class ShikimoriAnimeListApiController
      */
     public function library( Request $request, $userId = null ) {
         $userId = $userId ?? UserModel::instance()->getUserId();
-        if ( null === $userId ) {
-            response()->json([
+        if ( empty($userId) ) {
+            return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid user ID'
             ], 400);
@@ -25,7 +25,7 @@ class ShikimoriAnimeListApiController
 
         $animeList = AnimeListModel::instance()->getUserAnimeList( $userId );
 
-        if ( isset($animeList['status']) ) {
+        if ( isset($animeList['status']) && 'error' === $animeList['status']) {
             return response()->json([
                 'status' => $animeList['status'],
                 'message' => $animeList['message'],
@@ -77,7 +77,7 @@ class ShikimoriAnimeListApiController
     public function newRates( Request $request ) {
         $userId = $request['user_id'];
         if ( null === $userId ) {
-            response()->json([
+            return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid user ID'
             ], 400);
@@ -85,7 +85,7 @@ class ShikimoriAnimeListApiController
 
         $targetId = $request['target_id'];
         if ( null === $targetId ) {
-            response()->json([
+            return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid target ID'
             ], 400);
@@ -117,7 +117,7 @@ class ShikimoriAnimeListApiController
      */
     public function updateRates( Request $request, $rate_id ) {
         if ( null === $rate_id ) {
-            response()->json([
+            return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid rate ID'
             ], 400);

@@ -17,11 +17,11 @@ class UserModel {
      * @throws \Exception
      */
     public function __construct() {
-        $this->_userId =  request()->cookie(self::USER_ID_COOKIE_NAME);
+        $this->_userId = request()->cookie(self::USER_ID_COOKIE_NAME);
     }
 
     public function getUserId() {
-        return $this->_userId;
+        return $this->_userId ?? $this->me()['id'] ?? null;
     }
 
     public function me() {
@@ -40,7 +40,7 @@ class UserModel {
                 CookieSetter::create(
                     self::USER_ID_COOKIE_NAME,
                     $this->_userId,
-                    2678400,
+                    time() + 2678400,
                     '/',
                     null,
                     true,

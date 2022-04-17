@@ -36,7 +36,7 @@ class MalAnimeListApiController
      */
     public function rates( Request $request, $anime_id ) {
         if ( null === $anime_id ) {
-            response()->json([
+            return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid anime ID'
             ], 400);
@@ -72,7 +72,7 @@ class MalAnimeListApiController
      */
     public function updateRates( Request $request, $anime_id ) {
         if ( null === $anime_id ) {
-            response()->json([
+            return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid anime ID'
             ], 400);

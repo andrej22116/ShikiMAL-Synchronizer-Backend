@@ -3,69 +3,70 @@
 namespace App\Http\Controllers\Shikimori;
 
 use App\Models\Shikimori\AuthModel;
+use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Laravel\Lumen\Routing\Controller;
+use Illuminate\View\View;
+use Laravel\Lumen\Application;
+use Laravel\Lumen\Http\Redirector;
+use Throwable;
 
-class ShikimoriAuthApiController
-{
-    /**
-     * Start authorization
-     */
-    public function authorize( $request = null, $kek = null ) {
-        [$authUrl, $state] = AuthModel::instance()->getAuthUrl();
-        return redirect($authUrl);
-    }
-
+class ShikimoriAuthApiController {
     /**
      * Authorization step
+     *
+     * @param AuthModel $authModel
      * @param Request $request
-     * @return \Illuminate\View\View|\Laravel\Lumen\Application|null
+     *
+     * @return View|Application|null
      */
-    public function authorization( Request $request ) {
-        $code = $request->get('code');
+    public function authorization( AuthModel $authModel, Request $request ) {
+        $code = $request->get( 'code' );
         if ( null === $code ) {
             return null;
         }
 
-        if ( !AuthModel::instance()->authorize($code) ) {
+        if ( !$authModel->authorize( $code ) ) {
             return null;
         }
 
-        return view('close');
+        return view( 'close' );
+    }
+
+    /**
+     * Start authorization
+     *
+     * @param AuthModel $authModel
+     *
+     * @return RedirectResponse|Redirector
+     */
+    public function authorize( AuthModel $authModel ) {
+        [$authUrl, $state] = $authModel->getAuthUrl();
+        return redirect( $authUrl );
     }
 
     /**
      * Is authorized
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     *
+     * @param AuthModel $authModel
+     *
+     * @return array
+     * @throws Throwable
      */
-    public function authorized( Request $request ) {
-        $model = AuthModel::instance();
+    public function authorized( AuthModel $authModel ) {
+        throw_if( !$authModel->isAuthorized() && !$authModel->authorize(), Exception::class, 'Not authorized!', 401 );
 
-        if ( !$model->isAuthorized() && !$model->authorize() ) {
-            return response()->json([
-                'state' => 'error',
-                'message' => 'Not authorized!',
-            ], 401);
-        }
-
-        return response()->json([
-            'state' => 'ok',
-            'logged' => true
-        ]);
+        return ['logged' => true];
     }
 
     /**
      * Logout
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     *
+     * @param AuthModel $authModel
+     *
+     * @return void
      */
-    public function logout( Request $request ) {
-        AuthModel::instance()->logout();
-
-        return response()->json([
-            'state' => 'ok'
-        ]);
+    public function logout( AuthModel $authModel ): void {
+        $authModel->logout();
     }
 }

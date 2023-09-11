@@ -77,13 +77,15 @@ $app->configure('app');
 // ]);
 
 $app->routeMiddleware([
- 'shikimori_auth' => App\Http\Middleware\ShikimoriApiAuthMiddleware::class,
- 'mal_auth' => App\Http\Middleware\MalApiAuthMiddleware::class,
- 'cookie_response' => App\Http\Middleware\CookieAdderMiddleware::class,
+    'shikimori_auth' => App\Http\Middleware\ShikimoriApiAuthMiddleware::class,
+    'mal_auth' => App\Http\Middleware\MalApiAuthMiddleware::class,
+    'cookie_response' => App\Http\Middleware\CookieAdderMiddleware::class,
 
- 'put' => App\Http\Middleware\Request\PutRequestMiddleware::class,
- 'patch' => App\Http\Middleware\Request\PatchRequestMiddleware::class,
- 'delete' => App\Http\Middleware\Request\DeleteRequestMiddleware::class,
+    'put' => App\Http\Middleware\Request\PutRequestMiddleware::class,
+    'patch' => App\Http\Middleware\Request\PatchRequestMiddleware::class,
+    'delete' => App\Http\Middleware\Request\DeleteRequestMiddleware::class,
+
+    'json_r' => \App\Http\Middleware\JsonResponseMiddleware::class,
 ]);
 
 /*
@@ -97,7 +99,7 @@ $app->routeMiddleware([
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
+ $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 

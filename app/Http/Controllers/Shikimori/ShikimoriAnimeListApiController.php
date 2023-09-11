@@ -4,107 +4,70 @@ namespace App\Http\Controllers\Shikimori;
 
 use App\Models\Shikimori\AnimeListModel;
 use App\Models\Shikimori\UserModel;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Laravel\Lumen\Http\Request;
-use Laravel\Lumen\Routing\Controller;
+use Throwable;
 
-class ShikimoriAnimeListApiController
-{
+class ShikimoriAnimeListApiController {
     /**
      * Full anime list
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     *
+     * @param UserModel $userModel
+     * @param AnimeListModel $animeListModel
+     * @param null|string $userId
+     *
+     * @return array
+     * @throws Throwable
      */
-    public function library( Request $request, $userId = null ) {
-        $userId = $userId ?? UserModel::instance()->getUserId();
-        if ( empty($userId) ) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid user ID'
-            ], 400);
-        }
+    public function library( UserModel $userModel, AnimeListModel $animeListModel, ?string $userId = null ): array {
+        $userId = $userId ?? $userModel->getUserId();
+        throw_if( empty( $userId ), Exception::class, 'Invalid user ID', 400 );
 
-        $animeList = AnimeListModel::instance()->getUserAnimeList( $userId );
-
-        if ( isset($animeList['status']) && 'error' === $animeList['status']) {
-            return response()->json([
-                'status' => $animeList['status'],
-                'message' => $animeList['message'],
-            ], $animeList['code']);
-        }
-
-        return response()->json([
-            'status' => 'ok',
-            'list' => $animeList
-        ]);
+        return [
+            'list' => $animeListModel->getUserAnimeList( $userId ),
+        ];
     }
 
     /**
      * Full anime rates
+     *
+     * @param AnimeListModel $animeListModel
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     *
+     * @return array
+     * @throws Throwable
      */
-    public function rates( Request $request ) {
+    public function rates( AnimeListModel $animeListModel, Request $request ): array {
         $ratesId = $request['rate_id'];
-        if ( null === $ratesId ) {
-            response()->json([
-                'status' => 'error',
-                'message' => 'Invalid rates ID'
-            ], 400);
-        }
+        throw_if( null === $ratesId, Exception::class, 'Invalid rate ID', 400 );
 
-        $animeRates = AnimeListModel::instance()->getAnimeRates( $ratesId );
-
-        if ( isset($animeRates['status']) ) {
-            return response()->json([
-                'status' => $animeRates['status'],
-                'message' => $animeRates['message'],
-            ], $animeRates['code']);
-        }
-
-        return response()->json(
-            array_merge(
-                [ 'status' => 'ok' ],
-                $animeRates
-            )
-        );
+        return $animeListModel->getAnimeRates( $ratesId );
     }
 
     /**
      * Create new anime rate
+     *
+     * @param AnimeListModel $animeListModel
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     *
+     * @return JsonResponse
+     * @throws Throwable
      */
-    public function newRates( Request $request ) {
+    public function newRates( AnimeListModel $animeListModel, Request $request ) {
         $userId = $request['user_id'];
-        if ( null === $userId ) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid user ID'
-            ], 400);
-        }
-
         $targetId = $request['target_id'];
-        if ( null === $targetId ) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid target ID'
-            ], 400);
-        }
+
+        throw_if( null === $userId, Exception::class, 'Invalid user ID', 400 );
+        throw_if( null === $targetId, Exception::class, 'Invalid target ID', 400 );
 
         $rateFields = request()->input();
 
-        $createResult = AnimeListModel::instance()->createAnimeRates( $userId, $targetId, $rateFields );
-
-        if ( isset($createResult['status']) && 'error' === $createResult['status'] ) {
-            return response()->json([
-                'status' => $createResult['status'],
-                'message' => $createResult['message'],
-            ], $createResult['code']);
-        }
+        $createResult = $animeListModel->createAnimeRates( $userId, $targetId, $rateFields );
 
         return response()->json(
             array_merge(
-                [ 'status' => 'ok' ],
+                ['status' => 'ok'],
                 $createResult
             )
         );
@@ -112,31 +75,23 @@ class ShikimoriAnimeListApiController
 
     /**
      * Update anime rate
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     *
+     * @param AnimeListModel $animeListModel
+     * @param string|null $rate_id
+     *
+     * @return JsonResponse
+     * @throws Throwable
      */
-    public function updateRates( Request $request, $rate_id ) {
-        if ( null === $rate_id ) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid rate ID'
-            ], 400);
-        }
+    public function updateRates( AnimeListModel $animeListModel, ?string $rate_id ) {
+        throw_if( null === $rate_id, Exception::class, 'Invalid rate ID', 400 );
 
         $rateFields = request()->input();
 
-        $updateResult = AnimeListModel::instance()->updateAnimeRates( $rate_id, $rateFields );
-
-        if ( isset($updateResult['status']) && 'error' === $updateResult['status'] ) {
-            return response()->json([
-                'status' => $updateResult['status'],
-                'message' => $updateResult['message'],
-            ], $updateResult['code']);
-        }
+        $updateResult = $animeListModel->updateAnimeRates( $rate_id, $rateFields );
 
         return response()->json(
             array_merge(
-                [ 'status' => 'ok' ],
+                ['status' => 'ok'],
                 $updateResult
             )
         );
